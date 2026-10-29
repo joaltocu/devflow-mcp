@@ -1,0 +1,89 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# mypy
+.mypy_cache/
+.dmyp.json
+dmypy.json
+
+# ruff
+.ruff_cache/
+
+# DevFlow specific - DON'T COMMIT YOUR DATA!
+.devflow/
+devflow.db
+*.db
+*.sqlite
+
+# Alembic (database migrations will be committed, but not data)
+alembic/versions/*.pyc
+
+# Environment files - NEVER commit secrets!
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Old CLI files (keeping for reference, but may remove later)
+# Uncomment to exclude old standalone CLI implementation:
+# src/devflow/cli/

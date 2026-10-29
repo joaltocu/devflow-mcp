@@ -1,0 +1,58 @@
+# DevFlow Configuration Example
+# Copy this file to your project root as .devflow.toml and customize
+
+[project]
+# Project metadata
+name = "my-awesome-project"
+language = "python"  # python, javascript, typescript, rust, go, java, etc.
+framework = "fastapi"  # django, flask, fastapi, react, vue, etc.
+
+[agents.development]
+# Claude model for development tasks
+model = "claude-sonnet-4-5-20250929"
+# Token budget for development agent
+budget_tokens = 100000
+
+[agents.review]
+# Claude model for review agents
+model = "claude-sonnet-4-5-20250929"
+# Run reviews in parallel (faster) or sequentially
+parallel = true
+
+[reviewers.code_quality]
+# Enable code quality review
+enabled = true
+# Path to style guide (optional)
+style_guide = "docs/STYLE_GUIDE.md"
+
+[reviewers.security]
+# Enable security review
+enabled = true
+# Auto-scan for hardcoded secrets
+auto_scan_secrets = true
+# Security tools to use (optional)
+tools = ["bandit", "semgrep"]
+
+[reviewers.architecture]
+# Enable architecture review
+enabled = true
+# Path to architecture documentation (optional)
+architecture_doc = "docs/ARCHITECTURE.md"
+# Path to ADR directory (optional)
+adr_path = "docs/adr"
+
+[reviewers.test_coverage]
+# Enable test coverage review
+enabled = true
+# Minimum test coverage percentage
+minimum_coverage = 80
+# Command to run coverage (customize for your project)
+coverage_command = "pytest --cov=src --cov-report=json"
+
+[github]
+# Automatically create PR after successful workflow
+auto_create_pr = true
+# Path to PR template (optional)
+pr_template = ".github/pull_request_template.md"
+# Post review results as PR comments
+review_as_comments = true
