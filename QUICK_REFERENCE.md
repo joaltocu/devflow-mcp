@@ -32,7 +32,7 @@ cd /home/joseal/projects/joaltocu/framework
 ./scripts/setup-repo.sh
 
 # Optional: Push to GitHub
-git remote add origin https://github.com/joaltocu/devflow-mcp.git
+git remote add origin git@github.com:joaltocu/devflow-mcp.git
 git push -u origin main
 ```
 
@@ -118,13 +118,13 @@ cp ~/.devflow/devflow.db ~/backups/devflow-$(date +%Y%m%d).db
 
 ```bash
 # Machine 1 (laptop):
-git clone https://github.com/joaltocu/devflow-mcp.git
+git clone git@github.com:joaltocu/devflow-mcp.git
 pip install -e .
 ln -s /mnt/nas/.devflow ~/.devflow
 devflow-mcp
 
 # Machine 2 (desktop):
-git clone https://github.com/joaltocu/devflow-mcp.git
+git clone git@github.com:joaltocu/devflow-mcp.git
 pip install -e .
 ln -s /mnt/nas/.devflow ~/.devflow  # Same database!
 devflow-mcp

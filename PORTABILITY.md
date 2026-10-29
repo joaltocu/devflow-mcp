@@ -28,7 +28,7 @@ git commit -m "Initial commit: DevFlow MCP Server
 - SQLite storage at ~/.devflow/devflow.db"
 
 # Optional: Push to GitHub/GitLab
-git remote add origin https://github.com/joaltocu/devflow-mcp.git
+git remote add origin git@github.com:joaltocu/devflow-mcp.git
 git branch -M main
 git push -u origin main
 ```
@@ -71,7 +71,7 @@ This contains ALL your data:
 # On each machine:
 
 # 1. Clone the repo
-git clone https://github.com/joaltocu/devflow-mcp.git
+git clone git@github.com:joaltocu/devflow-mcp.git
 cd devflow-mcp
 pip install -e .
 
@@ -98,7 +98,7 @@ devflow-mcp
 
 ```bash
 # On old machine:
-git remote add origin https://github.com/joaltocu/devflow-mcp.git
+git remote add origin git@github.com:joaltocu/devflow-mcp.git
 git push -u origin main
 
 # Backup database
@@ -108,7 +108,7 @@ cp ~/.devflow/devflow.db ~/devflow-backup.db
 scp ~/devflow-backup.db new-machine:~/
 
 # On new machine:
-git clone https://github.com/joaltocu/devflow-mcp.git
+git clone git@github.com:joaltocu/devflow-mcp.git
 cd devflow-mcp
 pip install -e .
 
@@ -142,11 +142,11 @@ cp ~/.devflow/devflow.db ~/backups/devflow-$(date +%Y%m%d).db
 **Framework:**
 ```bash
 # Push to shared repo
-git remote add origin https://github.com/your-org/devflow-mcp.git
+git remote add origin git@github.com:your-org/devflow-mcp.git
 git push -u origin main
 
 # Team members:
-git clone https://github.com/your-org/devflow-mcp.git
+git clone git@github.com:your-org/devflow-mcp.git
 pip install -e .
 ```
 
@@ -170,7 +170,7 @@ git add .
 git commit -m "Initial commit: DevFlow MCP Server"
 
 # 2. Optional: Push to GitHub
-git remote add origin https://github.com/joaltocu/devflow-mcp.git
+git remote add origin git@github.com:joaltocu/devflow-mcp.git
 git push -u origin main
 
 # 3. Setup NAS storage
@@ -209,7 +209,7 @@ git push
 
 ```bash
 # One-time setup on new machine:
-git clone https://github.com/joaltocu/devflow-mcp.git
+git clone git@github.com:joaltocu/devflow-mcp.git
 cd devflow-mcp
 pip install -e .
 
@@ -282,7 +282,7 @@ If your laptop dies:
 # On new laptop:
 
 # 1. Get code from Git
-git clone https://github.com/joaltocu/devflow-mcp.git
+git clone git@github.com:joaltocu/devflow-mcp.git
 cd devflow-mcp
 pip install -e .
 

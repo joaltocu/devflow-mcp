@@ -517,7 +517,7 @@ git add .
 git commit -m "Initial commit: DevFlow MCP Server"
 
 # Optional: Push to GitHub
-git remote add origin https://github.com/joaltocu/devflow-mcp.git
+git remote add origin git@github.com:joaltocu/devflow-mcp.git
 git push -u origin main
 ```
 
