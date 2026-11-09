@@ -16,6 +16,97 @@ DevFlow MCP Server is a **holistic, agent-agnostic development infrastructure** 
 3. **Holistic**: Learns from all 22 projects, shares patterns across them
 4. **Extensible**: Add new tools without changing infrastructure
 
+## Multi-Level Holistic Architecture
+
+DevFlow implements a **layered holistic design** where each level can use agents, but all data flows to one central database:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ Level 1: External Agents (Development Work)                    │
+│                                                                 │
+│  Claude Code    │    GPT-4 Agent    │    Custom Agents         │
+│  Writing code   │    Writing docs   │    Compliance checks     │
+│                                                                 │
+│           ALL call DevFlow MCP tools ↓                          │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Level 2: DevFlow MCP Server (Central Orchestration)            │
+│                                                                 │
+│  • Provides MCP tools (development/, github/, knowledge/)      │
+│  • Manages all data and context                                │
+│  • Orchestrates multi-stage reviews                            │
+│  • Stores results in central database                          │
+│                                                                 │
+│           For reviews, delegates to ↓                           │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Level 3: Internal Review Agents (Specialized Work)             │
+│                                                                 │
+│  Mode A: Claude Code Reviewers (No API key required)           │
+│    • Code Quality Review                                       │
+│    • Security Review                                           │
+│    • Architecture Review                                       │
+│    • Test Coverage Review                                      │
+│                                                                 │
+│  Mode B: Anthropic API Reviewers (If ANTHROPIC_API_KEY set)    │
+│    • Same review types, different backend                      │
+│    • Faster, but requires API key                              │
+│                                                                 │
+│  Mode C: Custom Reviewers (You can add your own)               │
+│    • Language-specific linters                                 │
+│    • Team-specific checks                                      │
+│                                                                 │
+│           All results flow down to ↓                            │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Level 4: Central Database (Single Source of Truth)             │
+│                                                                 │
+│  ~/.devflow/devflow.db (or PostgreSQL)                         │
+│                                                                 │
+│  • All 22 projects                                             │
+│  • Every review from every agent                               │
+│  • Learned patterns (effectiveness scores)                     │
+│  • Knowledge base (cross-project)                              │
+│  • ADRs and decisions                                          │
+│  • Agent interactions log                                      │
+│                                                                 │
+│  YOU OWN THIS DATA - One file, portable, inspectable           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Why This Is Holistic
+
+1. **Centralized Data**: All agents write to the same database
+2. **Agent-Agnostic**: Any external agent can use DevFlow MCP
+3. **Compound Learning**: Patterns from all agents, all projects accumulate
+4. **Flexible Backend**: Internal implementation can use any agent
+5. **No Vendor Lock-in**: Works with Claude Code (free) or API (paid)
+
+### Automatic Backend Selection
+
+DevFlow automatically chooses the best review backend:
+
+```python
+# If ANTHROPIC_API_KEY exists → Use Anthropic API
+#   - Faster, parallel reviews
+#   - Costs API tokens
+#   - Good for high-volume usage
+
+# If NO API key → Use Claude Code
+#   - No additional costs
+#   - Uses your existing Claude Code access
+#   - Good for getting started
+
+# Future: Custom reviewers
+#   - Language-specific tools
+#   - Your own agents
+```
+
+The calling agent never knows or cares which backend is used. They just call `development/review_code` and get results.
+
 ## Architecture Diagram
 
 ```

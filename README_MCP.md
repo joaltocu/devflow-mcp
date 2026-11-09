@@ -6,77 +6,109 @@
 
 DevFlow MCP Server is your **personal development infrastructure** that:
 - 🧠 **Learns from all your projects** - Patterns, reviews, decisions stored in YOUR database
-- 🤖 **Works with any agent** - Claude, GPT-4, custom agents - all use the same tools
+- 🤖 **Works with any agent** - Claude Code, GPT-4, custom agents - all use the same tools
 - 📊 **Accumulates knowledge** - Every review improves future reviews
 - 🔧 **Extensible by design** - Add new workflows without changing infrastructure
+- 💰 **No API key required** - Uses Claude Code for reviews (or API if you prefer)
+- 🏠 **Completely portable** - One SQLite file = all your data
 
-## Architecture
+## Multi-Level Holistic Architecture
+
+DevFlow implements **holistic design at three levels**:
 
 ```
-┌────────────────────────────────────────────────┐
-│         DevFlow MCP Server (You Own)          │
-│                                                │
-│  MCP Tools:                                    │
-│  ├── development/review_code                   │
-│  ├── github/create_pr                          │
-│  ├── knowledge/query                           │
-│  └── context/get_project                       │
-│                                                │
-│  MCP Resources:                                │
-│  ├── project://{id}/context                    │
-│  ├── reviews://{id}/history                    │
-│  └── knowledge://patterns/{category}           │
-│                                                │
-│  Your PostgreSQL Database:                     │
-│  ├── Projects (all 22)                         │
-│  ├── Reviews (every review ever)               │
-│  ├── Patterns (learned from experience)        │
-│  └── Knowledge (accumulated insights)          │
-└────────────────────────────────────────────────┘
-              ▲                   ▲
-              │    MCP Protocol   │
-       ┌──────┴─────┐      ┌─────┴──────┐
-       │  Claude    │      │  Custom    │
-       │  Code      │      │  Agent     │
-       └────────────┘      └────────────┘
+┌─────────────────────────────────────────────────────┐
+│ Level 1: External Agents (ANY agent can use this)  │
+│  Claude Code  │  GPT-4  │  Custom Agents            │
+└─────────────────────┬───────────────────────────────┘
+                      │ MCP Protocol
+┌─────────────────────▼───────────────────────────────┐
+│ Level 2: DevFlow MCP Server (Central Orchestration)│
+│                                                     │
+│  MCP Tools:                                         │
+│  ├── development/review_code    ← Main review tool │
+│  ├── github/create_pr                              │
+│  ├── knowledge/query                               │
+│  └── context/get_project                           │
+│                                                     │
+│  Review Backend (automatic selection):             │
+│  • No API key? → Use Claude Code reviewers         │
+│  • API key set? → Use Anthropic API reviewers      │
+└─────────────────────┬───────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────┐
+│ Level 3: Internal Review Agents                    │
+│  Code Quality │ Security │ Architecture │ Coverage  │
+└─────────────────────┬───────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────┐
+│ Level 4: Your Database (YOU OWN THIS)              │
+│  ~/.devflow/devflow.db (SQLite)                    │
+│                                                     │
+│  • All 22 projects                                 │
+│  • Every review from every agent                   │
+│  • Learned patterns (effectiveness scores)         │
+│  • Knowledge base (cross-project insights)         │
+└─────────────────────────────────────────────────────┘
 ```
+
+**Why this is holistic:**
+- Any external agent can use DevFlow MCP
+- All data flows to one central database
+- Patterns learned from ALL agents, ALL projects
+- Internal implementation is flexible (Claude Code OR API)
+- You completely own all the data
 
 ## Quick Start
 
-### 1. Install
+### 1. Clone & Setup
 
 ```bash
 cd /home/joseal/projects/joaltocu/framework
-pip install -e .
+
+# Optional: Configure environment
+cp .env.example .env
+nano .env  # Add GITHUB_TOKEN, optionally ANTHROPIC_API_KEY
 ```
 
-### 2. Setup Database
+### 2. Run Server
 
 ```bash
-# Install PostgreSQL
-sudo apt install postgresql
-
-# Create database
-createdb devflow
-
-# Set environment variable
-export DEVFLOW_DATABASE_URL="postgresql+asyncpg://localhost/devflow"
+./run-mcp.sh
 ```
 
-### 3. Run Server
+That's it! The server:
+- Creates database at `~/.devflow/devflow.db` automatically
+- Uses Claude Code for reviews (no API key needed)
+- Runs over stdio, ready for MCP clients
+
+### 3. Connect from Claude Code
+
+Add to `~/.config/claude/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "devflow": {
+      "command": "/home/joseal/projects/joaltocu/framework/run-mcp.sh",
+      "args": []
+    }
+  }
+}
+```
+
+Restart Claude Code and DevFlow tools are available!
+
+### 4. Optional: Use API Reviews
+
+If you want faster API-based reviews instead of Claude Code reviews:
 
 ```bash
-devflow-mcp
+# Add to .env
+ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
-The server runs over stdio and is ready for MCP clients to connect.
-
-### 4. Connect an Agent
-
-See `examples/` directory for:
-- Claude Code integration
-- Custom agent examples
-- Configuration files
+DevFlow will automatically switch to API reviewers when it detects the key.
 
 ## Core Concepts
 

@@ -1,7 +1,9 @@
 """MCP tools for development workflows (code review, analysis)."""
 
 import json
+import os
 import uuid
+from pathlib import Path
 from typing import Any, Dict
 
 from mcp.server import Server
@@ -10,13 +12,21 @@ from mcp.types import Tool, TextContent
 from devflow.database.models import Project, Review, ReviewIssue
 from devflow.database.session import get_session
 
-# Import existing review services (we'll reuse the logic you already built)
+# Import review services
 from devflow.reviewers.code_quality import CodeQualityReviewer
 from devflow.reviewers.security import SecurityReviewer
 from devflow.reviewers.architecture import ArchitectureReviewer
 from devflow.reviewers.test_coverage import TestCoverageReviewer
 from devflow.reviewers.synthesis import SynthesisAgent
 from devflow.tools.diff_analyzer import DiffAnalyzer
+
+# Import Claude Code reviewers (no API key needed!)
+from devflow.reviewers.claude_code_reviewer import (
+    CodeQualityClaudeCodeReviewer,
+    SecurityClaudeCodeReviewer,
+    ArchitectureClaudeCodeReviewer,
+    TestCoverageClaudeCodeReviewer,
+)
 
 
 def register_development_tools(server: Server) -> None:
@@ -116,16 +126,34 @@ async def review_code(arguments: Dict[str, Any]) -> list[TextContent]:
     analyzer = DiffAnalyzer(diff)
     changes = analyzer.to_dict()
 
+    # Determine which reviewer backend to use
+    # If ANTHROPIC_API_KEY is set, use API reviewers
+    # Otherwise, use Claude Code reviewers (no API key needed!)
+    use_claude_code = os.getenv("ANTHROPIC_API_KEY") is None
+    working_dir = Path(context.get("working_dir", "/tmp/devflow-review"))
+
     # Initialize reviewers
     reviewers = []
-    if "code_quality" in review_types:
-        reviewers.append(CodeQualityReviewer())
-    if "security" in review_types:
-        reviewers.append(SecurityReviewer())
-    if "architecture" in review_types:
-        reviewers.append(ArchitectureReviewer())
-    if "coverage" in review_types:
-        reviewers.append(TestCoverageReviewer())
+    if use_claude_code:
+        # Use Claude Code reviewers (no API key required)
+        if "code_quality" in review_types:
+            reviewers.append(CodeQualityClaudeCodeReviewer(working_dir))
+        if "security" in review_types:
+            reviewers.append(SecurityClaudeCodeReviewer(working_dir))
+        if "architecture" in review_types:
+            reviewers.append(ArchitectureClaudeCodeReviewer(working_dir))
+        if "coverage" in review_types:
+            reviewers.append(TestCoverageClaudeCodeReviewer(working_dir))
+    else:
+        # Use API reviewers (requires ANTHROPIC_API_KEY)
+        if "code_quality" in review_types:
+            reviewers.append(CodeQualityReviewer())
+        if "security" in review_types:
+            reviewers.append(SecurityReviewer())
+        if "architecture" in review_types:
+            reviewers.append(ArchitectureReviewer())
+        if "coverage" in review_types:
+            reviewers.append(TestCoverageReviewer())
 
     # Run reviews
     review_results = []
