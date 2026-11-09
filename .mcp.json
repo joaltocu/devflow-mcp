@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "devflow": {
+      "command": "/home/joseal/projects/joaltocu/framework/run-mcp.sh",
+      "args": []
+    }
+  }
+}

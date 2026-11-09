@@ -87,3 +87,4 @@ logs/
 # Old CLI files (keeping for reference, but may remove later)
 # Uncomment to exclude old standalone CLI implementation:
 # src/devflow/cli/
+.claude/
