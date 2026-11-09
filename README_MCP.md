@@ -106,7 +106,27 @@ Add to `~/.config/claude/mcp.json`:
 
 Restart Claude Code and DevFlow tools are available!
 
-### 4. Optional: Use API Reviews
+### 4. Install Skills (Recommended)
+
+DevFlow comes with Claude Code skills that make it easier to use:
+
+```bash
+# Copy skills to Claude Code
+cp skills/*.md ~/.claude/skills/
+
+# Or create symlinks for auto-updates
+ln -s $(pwd)/skills/*.md ~/.claude/skills/
+```
+
+**Available skills:**
+- `devflow-review` - Auto-review code changes
+- `devflow-setup` - Set up new projects
+- `devflow-help` - Quick help and examples
+- `devflow-precommit` - Proactive pre-commit checks
+
+Restart Claude Code and skills will be active. See `skills/README.md` for details.
+
+### 5. Optional: Use API Reviews
 
 If you want faster API-based reviews instead of Claude Code reviews, you have two options:
 
