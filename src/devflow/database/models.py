@@ -36,7 +36,7 @@ class Project(Base):
     language: Mapped[Optional[str]] = mapped_column(String(50))
     framework: Mapped[Optional[str]] = mapped_column(String(50))
     repository_url: Mapped[Optional[str]] = mapped_column(Text)
-    metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
@@ -118,7 +118,7 @@ class Pattern(Base):
     effectiveness_score: Mapped[float] = mapped_column(Float, default=0.0)
     usage_count: Mapped[int] = mapped_column(Integer, default=0)
     projects: Mapped[Optional[List[str]]] = mapped_column(JSONB)
-    metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
@@ -144,7 +144,7 @@ class Decision(Base):
     decision: Mapped[str] = mapped_column(Text, nullable=False)
     consequences: Mapped[Optional[str]] = mapped_column(Text)
     alternatives: Mapped[Optional[List[Dict[str, Any]]]] = mapped_column(JSONB)
-    metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
