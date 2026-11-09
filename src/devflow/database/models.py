@@ -13,8 +13,38 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.types import JSON, TypeDecorator, String as StringType
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+
+class UUID(TypeDecorator):
+    """Universal UUID type that works with both SQLite and PostgreSQL."""
+
+    impl = StringType
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            return dialect.type_descriptor(PG_UUID())
+        else:
+            return dialect.type_descriptor(StringType(36))
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        elif dialect.name == "postgresql":
+            return value
+        else:
+            return str(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        elif dialect.name == "postgresql":
+            return value
+        else:
+            return uuid.UUID(value)
 
 
 class Base(DeclarativeBase):
@@ -29,14 +59,14 @@ class Project(Base):
     __tablename__ = "projects"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        UUID(), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     path: Mapped[str] = mapped_column(Text, nullable=False)
     language: Mapped[Optional[str]] = mapped_column(String(50))
     framework: Mapped[Optional[str]] = mapped_column(String(50))
     repository_url: Mapped[Optional[str]] = mapped_column(Text)
-    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
@@ -58,15 +88,15 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        UUID(), primary_key=True, default=uuid.uuid4
     )
     project_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("projects.id"), nullable=False
     )
     type: Mapped[str] = mapped_column(String(50), nullable=False)
     diff: Mapped[str] = mapped_column(Text, nullable=False)
-    context: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
-    result: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    context: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
+    result: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
     agent_type: Mapped[Optional[str]] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
@@ -83,7 +113,7 @@ class ReviewIssue(Base):
     __tablename__ = "review_issues"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        UUID(), primary_key=True, default=uuid.uuid4
     )
     review_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("reviews.id"), nullable=False
@@ -109,7 +139,7 @@ class Pattern(Base):
     __tablename__ = "patterns"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        UUID(), primary_key=True, default=uuid.uuid4
     )
     category: Mapped[str] = mapped_column(String(100), nullable=False)
     pattern_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -117,8 +147,8 @@ class Pattern(Base):
     code_example: Mapped[Optional[str]] = mapped_column(Text)
     effectiveness_score: Mapped[float] = mapped_column(Float, default=0.0)
     usage_count: Mapped[int] = mapped_column(Integer, default=0)
-    projects: Mapped[Optional[List[str]]] = mapped_column(JSONB)
-    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    projects: Mapped[Optional[List[str]]] = mapped_column(JSON)
+    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
@@ -133,7 +163,7 @@ class Decision(Base):
     __tablename__ = "decisions"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        UUID(), primary_key=True, default=uuid.uuid4
     )
     project_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("projects.id"), nullable=False
@@ -143,8 +173,8 @@ class Decision(Base):
     context: Mapped[Optional[str]] = mapped_column(Text)
     decision: Mapped[str] = mapped_column(Text, nullable=False)
     consequences: Mapped[Optional[str]] = mapped_column(Text)
-    alternatives: Mapped[Optional[List[Dict[str, Any]]]] = mapped_column(JSONB)
-    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    alternatives: Mapped[Optional[List[Dict[str, Any]]]] = mapped_column(JSON)
+    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
@@ -162,15 +192,15 @@ class AgentInteraction(Base):
     __tablename__ = "agent_interactions"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        UUID(), primary_key=True, default=uuid.uuid4
     )
     project_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         ForeignKey("projects.id")
     )
     agent_type: Mapped[str] = mapped_column(String(100), nullable=False)
     tool_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    input_params: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
-    output_result: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    input_params: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
+    output_result: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
     success: Mapped[Optional[bool]] = mapped_column(Boolean)
     error_message: Mapped[Optional[str]] = mapped_column(Text)
     duration_ms: Mapped[Optional[int]] = mapped_column(Integer)
@@ -190,15 +220,15 @@ class KnowledgeBase(Base):
     __tablename__ = "knowledge_base"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        UUID(), primary_key=True, default=uuid.uuid4
     )
     topic: Mapped[str] = mapped_column(String(255), nullable=False)
     category: Mapped[Optional[str]] = mapped_column(String(100))
     content: Mapped[str] = mapped_column(Text, nullable=False)
     source: Mapped[Optional[str]] = mapped_column(String(255))
     relevance_score: Mapped[float] = mapped_column(Float, default=0.0)
-    tags: Mapped[Optional[List[str]]] = mapped_column(JSONB)
-    projects: Mapped[Optional[List[str]]] = mapped_column(JSONB)
+    tags: Mapped[Optional[List[str]]] = mapped_column(JSON)
+    projects: Mapped[Optional[List[str]]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )

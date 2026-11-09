@@ -1,6 +1,7 @@
 """Database session management."""
 
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -46,6 +47,7 @@ async def init_db() -> None:
         await conn.run_sync(Base.metadata.create_all)
 
 
+@asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """Get database session.
 
