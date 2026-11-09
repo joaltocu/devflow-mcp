@@ -66,10 +66,15 @@ DevFlow implements **holistic design at three levels**:
 ```bash
 cd /home/joseal/projects/joaltocu/framework
 
-# Optional: Configure environment
+# Configure environment (optional)
 cp .env.example .env
-nano .env  # Add GITHUB_TOKEN, optionally ANTHROPIC_API_KEY
+nano .env  # Configure your settings
 ```
+
+**Configuration (optional):**
+- Leave as-is to use Claude Code reviews (free, no API key needed)
+- Add `ANTHROPIC_API_KEY` for faster API reviews (costs tokens)
+- Add `GITHUB_TOKEN` for PR creation features
 
 ### 2. Run Server
 

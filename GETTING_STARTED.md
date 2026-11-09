@@ -19,18 +19,35 @@ DevFlow supports **two modes** for code reviews:
 
 ### 2. Configure Environment
 
-Edit `.env`:
+First, copy the example configuration:
 
 ```bash
-# Optional: For faster API-based reviews (Mode B)
-# Leave blank to use Claude Code reviews (Mode A)
-ANTHROPIC_API_KEY=sk-ant-xxx
-
-# Required for GitHub operations
-GITHUB_TOKEN=ghp_xxx
+cp .env.example .env
 ```
 
-**Important:** If you don't set `ANTHROPIC_API_KEY`, DevFlow will automatically use Claude Code for reviews. No API key needed!
+Then edit `.env` with your settings:
+
+```bash
+nano .env
+```
+
+**Configuration options:**
+
+```bash
+# Mode A (Default): Claude Code Reviews - No API key needed
+# Just leave ANTHROPIC_API_KEY commented out
+
+# Mode B (Optional): Anthropic API Reviews - Faster, costs tokens
+ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
+
+# GitHub Integration (Optional)
+GITHUB_TOKEN=ghp_your-token-here
+```
+
+**Important:**
+- If you don't set `ANTHROPIC_API_KEY`, DevFlow will automatically use Claude Code for reviews (free!)
+- GitHub token is only needed for PR creation features
+- Never commit `.env` to git - it's excluded in `.gitignore`
 
 ### 2. Run the MCP Server
 
