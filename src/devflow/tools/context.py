@@ -11,145 +11,141 @@ from devflow.database.models import Project
 from devflow.database.session import get_session
 
 
-def register_context_tools(server: Server) -> None:
-    """Register context-related MCP tools.
+def get_tool_definitions() -> list[Tool]:
+    """Get context tool definitions.
+
+    Returns:
+        List of Tool objects
+    """
+    return [
+        Tool(
+            name="context/create_project",
+            description="Create a new project in DevFlow database",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Project name",
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Absolute path to project directory",
+                    },
+                    "language": {
+                        "type": "string",
+                        "description": "Primary programming language (e.g., python, rust, javascript)",
+                    },
+                    "framework": {
+                        "type": "string",
+                        "description": "Framework if applicable (e.g., fastapi, react, actix)",
+                    },
+                    "repository_url": {
+                        "type": "string",
+                        "description": "Git repository URL",
+                    },
+                    "extra_metadata": {
+                        "type": "object",
+                        "description": "Additional project metadata",
+                    },
+                },
+                "required": ["name", "path"],
+            },
+        ),
+        Tool(
+            name="context/list_projects",
+            description="List all projects in DevFlow database",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "number",
+                        "description": "Maximum number of projects to return",
+                        "default": 100,
+                    },
+                    "offset": {
+                        "type": "number",
+                        "description": "Number of projects to skip",
+                        "default": 0,
+                    },
+                },
+            },
+        ),
+        Tool(
+            name="context/get_project",
+            description="Get detailed information about a specific project",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project UUID",
+                    },
+                },
+                "required": ["project_id"],
+            },
+        ),
+        Tool(
+            name="context/update_project",
+            description="Update project information",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project UUID",
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Project name",
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Absolute path to project directory",
+                    },
+                    "language": {
+                        "type": "string",
+                        "description": "Primary programming language",
+                    },
+                    "framework": {
+                        "type": "string",
+                        "description": "Framework if applicable",
+                    },
+                    "repository_url": {
+                        "type": "string",
+                        "description": "Git repository URL",
+                    },
+                    "extra_metadata": {
+                        "type": "object",
+                        "description": "Additional project metadata",
+                    },
+                },
+                "required": ["project_id"],
+            },
+        ),
+    ]
+
+
+async def handle_tool_call(name: str, arguments: Dict[str, Any]) -> list[TextContent]:
+    """Handle context tool calls.
 
     Args:
-        server: MCP server instance
+        name: Tool name
+        arguments: Tool arguments
+
+    Returns:
+        Tool result
     """
-
-    @server.list_tools()
-    async def list_tools() -> list[Tool]:
-        """List available context tools."""
-        return [
-            Tool(
-                name="context/create_project",
-                description="Create a new project in DevFlow database",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "Project name",
-                        },
-                        "path": {
-                            "type": "string",
-                            "description": "Absolute path to project directory",
-                        },
-                        "language": {
-                            "type": "string",
-                            "description": "Primary programming language (e.g., python, rust, javascript)",
-                        },
-                        "framework": {
-                            "type": "string",
-                            "description": "Framework if applicable (e.g., fastapi, react, actix)",
-                        },
-                        "repository_url": {
-                            "type": "string",
-                            "description": "Git repository URL",
-                        },
-                        "extra_metadata": {
-                            "type": "object",
-                            "description": "Additional project metadata",
-                        },
-                    },
-                    "required": ["name", "path"],
-                },
-            ),
-            Tool(
-                name="context/list_projects",
-                description="List all projects in DevFlow database",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "limit": {
-                            "type": "number",
-                            "description": "Maximum number of projects to return",
-                            "default": 100,
-                        },
-                        "offset": {
-                            "type": "number",
-                            "description": "Number of projects to skip",
-                            "default": 0,
-                        },
-                    },
-                },
-            ),
-            Tool(
-                name="context/get_project",
-                description="Get detailed information about a specific project",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "project_id": {
-                            "type": "string",
-                            "description": "Project UUID",
-                        },
-                    },
-                    "required": ["project_id"],
-                },
-            ),
-            Tool(
-                name="context/update_project",
-                description="Update project information",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "project_id": {
-                            "type": "string",
-                            "description": "Project UUID",
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "Project name",
-                        },
-                        "path": {
-                            "type": "string",
-                            "description": "Absolute path to project directory",
-                        },
-                        "language": {
-                            "type": "string",
-                            "description": "Primary programming language",
-                        },
-                        "framework": {
-                            "type": "string",
-                            "description": "Framework if applicable",
-                        },
-                        "repository_url": {
-                            "type": "string",
-                            "description": "Git repository URL",
-                        },
-                        "extra_metadata": {
-                            "type": "object",
-                            "description": "Additional project metadata",
-                        },
-                    },
-                    "required": ["project_id"],
-                },
-            ),
-        ]
-
-    @server.call_tool()
-    async def call_tool(name: str, arguments: Dict[str, Any]) -> list[TextContent]:
-        """Handle tool calls.
-
-        Args:
-            name: Tool name
-            arguments: Tool arguments
-
-        Returns:
-            Tool result
-        """
-        if name == "context/create_project":
-            return await create_project(arguments)
-        elif name == "context/list_projects":
-            return await list_projects(arguments)
-        elif name == "context/get_project":
-            return await get_project(arguments)
-        elif name == "context/update_project":
-            return await update_project(arguments)
-        else:
-            raise ValueError(f"Unknown tool: {name}")
+    if name == "context/create_project":
+        return await create_project(arguments)
+    elif name == "context/list_projects":
+        return await list_projects(arguments)
+    elif name == "context/get_project":
+        return await get_project(arguments)
+    elif name == "context/update_project":
+        return await update_project(arguments)
+    else:
+        raise ValueError(f"Unknown context tool: {name}")
 
 
 async def create_project(arguments: Dict[str, Any]) -> list[TextContent]:

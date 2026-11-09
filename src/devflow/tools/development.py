@@ -37,78 +37,74 @@ from devflow.reviewers.generic_llm_reviewer import (
 )
 
 
-def register_development_tools(server: Server) -> None:
-    """Register development-related MCP tools.
+def get_tool_definitions() -> list[Tool]:
+    """Get development tool definitions.
+
+    Returns:
+        List of Tool objects
+    """
+    return [
+        Tool(
+            name="development/review_code",
+            description="Run comprehensive code review (quality, security, architecture, coverage)",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project UUID",
+                    },
+                    "diff": {
+                        "type": "string",
+                        "description": "Git diff output to review",
+                    },
+                    "review_types": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Types of reviews to run",
+                        "default": ["code_quality", "security", "architecture", "coverage"],
+                    },
+                    "context": {
+                        "type": "object",
+                        "description": "Additional context (branch, author, etc.)",
+                    },
+                },
+                "required": ["project_id", "diff"],
+            },
+        ),
+        Tool(
+            name="development/analyze_diff",
+            description="Analyze git diff to extract structured information about changes",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "diff": {
+                        "type": "string",
+                        "description": "Git diff output",
+                    },
+                },
+                "required": ["diff"],
+            },
+        ),
+    ]
+
+
+async def handle_tool_call(name: str, arguments: Dict[str, Any]) -> list[TextContent]:
+    """Handle development tool calls.
 
     Args:
-        server: MCP server instance
+        name: Tool name
+        arguments: Tool arguments
+
+    Returns:
+        Tool result
     """
-
-    @server.list_tools()
-    async def list_tools() -> list[Tool]:
-        """List available development tools."""
-        return [
-            Tool(
-                name="development/review_code",
-                description="Run comprehensive code review (quality, security, architecture, coverage)",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "project_id": {
-                            "type": "string",
-                            "description": "Project UUID",
-                        },
-                        "diff": {
-                            "type": "string",
-                            "description": "Git diff output to review",
-                        },
-                        "review_types": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": "Types of reviews to run",
-                            "default": ["code_quality", "security", "architecture", "coverage"],
-                        },
-                        "context": {
-                            "type": "object",
-                            "description": "Additional context (branch, author, etc.)",
-                        },
-                    },
-                    "required": ["project_id", "diff"],
-                },
-            ),
-            Tool(
-                name="development/analyze_diff",
-                description="Analyze git diff to extract structured information about changes",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "diff": {
-                            "type": "string",
-                            "description": "Git diff output",
-                        },
-                    },
-                    "required": ["diff"],
-                },
-            ),
-        ]
-
-    @server.call_tool()
-    async def call_tool(name: str, arguments: Dict[str, Any]) -> list[TextContent]:
-        """Handle tool calls.
-
-        Args:
-            name: Tool name
-            arguments: Tool arguments
-
-        Returns:
-            Tool result
-        """
-        if name == "development/review_code":
-            return await review_code(arguments)
-        elif name == "development/analyze_diff":
-            return await analyze_diff(arguments)
-        else:
-            raise ValueError(f"Unknown tool: {name}")
+    if name == "development/review_code":
+        return await review_code(arguments)
+    elif name == "development/analyze_diff":
+        return await analyze_diff(arguments)
+    else:
+        raise ValueError(f"Unknown development tool: {name}")
 
 
 async def review_code(arguments: Dict[str, Any]) -> list[TextContent]:
