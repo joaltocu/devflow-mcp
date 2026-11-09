@@ -28,6 +28,14 @@ from devflow.reviewers.claude_code_reviewer import (
     TestCoverageClaudeCodeReviewer,
 )
 
+# Import Generic LLM reviewers (OpenAI-compatible APIs)
+from devflow.reviewers.generic_llm_reviewer import (
+    CodeQualityGenericReviewer,
+    SecurityGenericReviewer,
+    ArchitectureGenericReviewer,
+    TestCoverageGenericReviewer,
+)
+
 
 def register_development_tools(server: Server) -> None:
     """Register development-related MCP tools.
@@ -127,14 +135,46 @@ async def review_code(arguments: Dict[str, Any]) -> list[TextContent]:
     changes = analyzer.to_dict()
 
     # Determine which reviewer backend to use
-    # If ANTHROPIC_API_KEY is set, use API reviewers
-    # Otherwise, use Claude Code reviewers (no API key needed!)
-    use_claude_code = os.getenv("ANTHROPIC_API_KEY") is None
+    # Priority: LLM_API_KEY > ANTHROPIC_API_KEY > Claude Code
+    llm_api_key = os.getenv("LLM_API_KEY")
+    anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
     working_dir = Path(context.get("working_dir", "/tmp/devflow-review"))
 
-    # Initialize reviewers
+    # Detect backend
+    if llm_api_key:
+        backend = "generic_llm"
+        llm_model = os.getenv("LLM_MODEL", "gpt-4")
+    elif anthropic_api_key:
+        backend = "anthropic"
+    else:
+        backend = "claude_code"
+
+    # Initialize reviewers based on backend
     reviewers = []
-    if use_claude_code:
+
+    if backend == "generic_llm":
+        # Use Generic LLM reviewers (OpenAI-compatible API)
+        if "code_quality" in review_types:
+            reviewers.append(CodeQualityGenericReviewer(llm_model))
+        if "security" in review_types:
+            reviewers.append(SecurityGenericReviewer(llm_model))
+        if "architecture" in review_types:
+            reviewers.append(ArchitectureGenericReviewer(llm_model))
+        if "coverage" in review_types:
+            reviewers.append(TestCoverageGenericReviewer(llm_model))
+
+    elif backend == "anthropic":
+        # Use Anthropic API reviewers
+        if "code_quality" in review_types:
+            reviewers.append(CodeQualityReviewer())
+        if "security" in review_types:
+            reviewers.append(SecurityReviewer())
+        if "architecture" in review_types:
+            reviewers.append(ArchitectureReviewer())
+        if "coverage" in review_types:
+            reviewers.append(TestCoverageReviewer())
+
+    else:  # claude_code
         # Use Claude Code reviewers (no API key required)
         if "code_quality" in review_types:
             reviewers.append(CodeQualityClaudeCodeReviewer(working_dir))
@@ -144,16 +184,6 @@ async def review_code(arguments: Dict[str, Any]) -> list[TextContent]:
             reviewers.append(ArchitectureClaudeCodeReviewer(working_dir))
         if "coverage" in review_types:
             reviewers.append(TestCoverageClaudeCodeReviewer(working_dir))
-    else:
-        # Use API reviewers (requires ANTHROPIC_API_KEY)
-        if "code_quality" in review_types:
-            reviewers.append(CodeQualityReviewer())
-        if "security" in review_types:
-            reviewers.append(SecurityReviewer())
-        if "architecture" in review_types:
-            reviewers.append(ArchitectureReviewer())
-        if "coverage" in review_types:
-            reviewers.append(TestCoverageReviewer())
 
     # Run reviews
     review_results = []

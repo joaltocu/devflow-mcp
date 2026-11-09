@@ -4,7 +4,7 @@
 
 ### 1. Choose Your Review Backend
 
-DevFlow supports **two modes** for code reviews:
+DevFlow supports **three modes** for code reviews:
 
 **Mode A: Claude Code Reviews (Recommended for getting started)**
 - ✅ No API key required
@@ -12,9 +12,17 @@ DevFlow supports **two modes** for code reviews:
 - ✅ No additional costs
 - Best for: Getting started, testing, personal projects
 
-**Mode B: Anthropic API Reviews**
-- ⚡ Faster parallel reviews
-- 💰 Costs API tokens
+**Mode B: Generic LLM / OpenAI-Compatible API (Recommended for custom models)**
+- 🔧 Works with ANY OpenAI-compatible API
+- 🌐 Supports: OpenAI, GLM, DeepSeek, Groq, and more
+- ⚡ Faster than Claude Code
+- 💰 Costs depend on provider
+- Best for: Custom models, specific providers, cost optimization
+
+**Mode C: Anthropic API Reviews**
+- ⚡ Fastest parallel reviews
+- 🎯 Official Anthropic models
+- 💰 Costs API tokens (~$0.003 per review)
 - Best for: High-volume usage, production
 
 ### 2. Configure Environment
@@ -35,17 +43,30 @@ nano .env
 
 ```bash
 # Mode A (Default): Claude Code Reviews - No API key needed
-# Just leave ANTHROPIC_API_KEY commented out
+# Just leave all API keys commented out
 
-# Mode B (Optional): Anthropic API Reviews - Faster, costs tokens
-ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
+# Mode B: Generic LLM / OpenAI-Compatible API
+# Uncomment and configure for custom LLM providers:
+# LLM_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# LLM_BASE_URL=https://api.nan.builders/v1
+# LLM_MODEL=glm5.3-flash
+
+# Mode C: Anthropic API Reviews
+# Uncomment for official Anthropic API:
+# ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
 
 # GitHub Integration (Optional)
 GITHUB_TOKEN=ghp_your-token-here
 ```
 
+**Auto-detection priority:**
+DevFlow automatically detects which backend to use:
+1. If `LLM_API_KEY` is set → Use Generic LLM (Mode B)
+2. Else if `ANTHROPIC_API_KEY` is set → Use Anthropic API (Mode C)
+3. Else → Use Claude Code (Mode A - default)
+
 **Important:**
-- If you don't set `ANTHROPIC_API_KEY`, DevFlow will automatically use Claude Code for reviews (free!)
+- Mode A requires no configuration - it just works!
 - GitHub token is only needed for PR creation features
 - Never commit `.env` to git - it's excluded in `.gitignore`
 
@@ -170,7 +191,9 @@ All agents call the same MCP tools and write to your central database.
 ```
 DevFlow receives review request
     ↓
-If ANTHROPIC_API_KEY set:
+If LLM_API_KEY set:
+    → Use Generic LLM reviewers (OpenAI-compatible API)
+Else if ANTHROPIC_API_KEY set:
     → Use Anthropic API reviewers (fast, costs tokens)
 Else:
     → Use Claude Code reviewers (free, uses your access)
@@ -198,14 +221,24 @@ External Agent → DevFlow → Claude Code (subprocess) → Results → Database
                     Writes diff to file, asks Claude Code to review
 ```
 
-**Mode B: API Reviews**
+**Mode B: Generic LLM Reviews**
+```
+External Agent → DevFlow → OpenAI-compatible API → Results → Database
+                                ↓
+                    Sends request to GLM/OpenAI/DeepSeek/etc.
+```
+
+**Mode C: Anthropic API Reviews**
 ```
 External Agent → DevFlow → Anthropic API → Results → Database
                                 ↓
                     Sends request to Claude API directly
 ```
 
-Both modes produce the same structured results. The difference is performance and cost.
+All modes produce the same structured results. The differences are:
+- **Mode A**: Free, slower (subprocess overhead), uses your Claude Code access
+- **Mode B**: Provider-dependent cost, fast, works with any OpenAI-compatible API
+- **Mode C**: ~$0.003/review, fastest, official Anthropic models
 
 ## Next Steps
 

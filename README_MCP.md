@@ -32,8 +32,9 @@ DevFlow implements **holistic design at three levels**:
 │  └── context/get_project                           │
 │                                                     │
 │  Review Backend (automatic selection):             │
+│  • LLM_API_KEY set? → Use Generic LLM reviewers    │
+│  • ANTHROPIC_API_KEY set? → Use Anthropic API      │
 │  • No API key? → Use Claude Code reviewers         │
-│  • API key set? → Use Anthropic API reviewers      │
 └─────────────────────┬───────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────┐
@@ -73,7 +74,8 @@ nano .env  # Configure your settings
 
 **Configuration (optional):**
 - Leave as-is to use Claude Code reviews (free, no API key needed)
-- Add `ANTHROPIC_API_KEY` for faster API reviews (costs tokens)
+- Add `LLM_API_KEY` + `LLM_BASE_URL` + `LLM_MODEL` for custom LLM providers (GLM, DeepSeek, OpenAI, etc.)
+- Add `ANTHROPIC_API_KEY` for official Anthropic API reviews (costs tokens)
 - Add `GITHUB_TOKEN` for PR creation features
 
 ### 2. Run Server
@@ -106,14 +108,23 @@ Restart Claude Code and DevFlow tools are available!
 
 ### 4. Optional: Use API Reviews
 
-If you want faster API-based reviews instead of Claude Code reviews:
+If you want faster API-based reviews instead of Claude Code reviews, you have two options:
 
+**Option 1: Generic LLM (Recommended for custom providers)**
+```bash
+# Add to .env - Works with ANY OpenAI-compatible API
+LLM_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+LLM_BASE_URL=https://api.nan.builders/v1
+LLM_MODEL=glm5.3-flash
+```
+
+**Option 2: Anthropic API (Official Claude models)**
 ```bash
 # Add to .env
 ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
-DevFlow will automatically switch to API reviewers when it detects the key.
+DevFlow automatically detects and uses the appropriate backend based on which keys are set.
 
 ## Core Concepts
 
